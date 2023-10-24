@@ -1,0 +1,64 @@
+#!/bin/bash
+
+CURR_DIR=${PWD}
+FOLDER_NAME=$(basename ${PWD})
+PYRENDERDOC_LIB=${PWD}/pyrenderdoc/lib
+PYRENDERDOC_DATA=${PWD}/pyrenderdoc/data
+mode="$1"
+
+install_resource(){
+#mkdir %py%\Tools\pyrenderdoc
+#mkdir %py%\Tools\pyrenderdoc\vk
+#mkdir %py%\Tools\pyrenderdoc\gl
+sudo cp $PYRENDERDOC_LIB/librenderdoc.so $lib_path/librenderdoc.so
+sudo cp $PYRENDERDOC_LIB/qrenderdoc.so $lib_path/qrenderdoc.so
+sudo cp $PYRENDERDOC_LIB/renderdoc.so $lib_path/renderdoc.so
+}
+
+flush_resource(){
+if [ -e $lib_path/librenderdoc.so ]; then
+  sudo rm $lib_path/librenderdoc.so
+fi
+if [ -e $lib_path/renderdoc.so ]; then
+  sudo rm $lib_path/renderdoc.so
+fi
+if [ -e $lib_path/qrenderdoc.so ]; then
+  sudo rm $lib_path/qrenderdoc.so
+fi
+}
+
+get_lib_path=`cat <<_EOF_
+import sys
+dynload = ""
+for p in sys.path:
+    if p.endswith("lib-dynload"):
+        dynload = p
+        break
+print(dynload)
+_EOF_`
+
+lib_path=`echo "$get_lib_path" | python3`
+if [ "$lib_path" = "" ]
+then
+echo "NOT FOUND `lib-dynload` "
+exit 0
+fi
+
+flush_resource
+
+if [ "$mode" = "install" ]
+then
+    install_resource
+    chdir %CURR_DIR%
+    cd ..
+    python3 -m pip install ./$FOLDER_NAME
+    exit 0
+fi
+
+if [ "$mode" = "uninstall" ]
+then
+    python3 -m pip uninstall pyrenderdoc
+    exit 0
+fi
+
+echo please specify setup.bat [install/uninstall]
