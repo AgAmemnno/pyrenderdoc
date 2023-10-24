@@ -4,6 +4,10 @@ set CURR_DIR=%cd%
 set PYRENDERDOC_LIB=%cd%\pyrenderdoc\lib
 set PYRENDERDOC_DATA=%cd%\pyrenderdoc\data
 set mode="%1"
+cd ..
+FOR /F "tokens=* USEBACKQ" %%F IN (`FORFILES`) DO (
+SET FOLDER_NAME=%%F
+)
 
 
 CALL :get_python36
@@ -16,7 +20,7 @@ If %mode% == "install" (
     CALL :install_resource
     chdir %CURR_DIR%
     cd ..
-    call %py%\python.exe -m pip install ./pyrenderdoc
+    call %py%\python.exe -m pip install ./%FOLDER_NAME%
     goto end
 )
 
